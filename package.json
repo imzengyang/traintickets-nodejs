@@ -1,0 +1,25 @@
+{
+  "name": "traintickets-nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imzengyang/traintickets-nodejs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imzengyang/traintickets-nodejs/issues"
+  },
+  "homepage": "https://github.com/imzengyang/traintickets-nodejs#readme",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "docopt": "^0.6.2",
+    "prettytable": "^0.3.1"
+  }
+}
