@@ -1,38 +1,66 @@
+doc = `
+Train tickets query via command-line.
+Usage:
+   tickets [-gdtkz] <from> <to> <date>
+Options:
+   -h,--help   显示帮助菜单
+   -g          高铁
+   -d          动车
+   -t          特快
+   -k          快速
+   -z          直达
+Example:
+   index 上海 北京 2017-12-05
+`
+const { docopt } = require('docopt')
 const axios = require('axios')
 const PrettyTable = require('prettytable')
+let { getCityName, getCode } = require('./stations')
+
 let pt = new PrettyTable();
 
+let requestObj = docopt(doc)
+let start_station = getCode(requestObj['<from>'])
+let end_station = getCode(requestObj['<to>'])
+let start_date = requestObj['<date>']
 
-const url = "https://kyfw.12306.cn/otn/leftTicket/queryZ?leftTicketDTO.train_date=2018-01-26&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=ZZF&purpose_codes=ADULT"
+let url = `https://kyfw.12306.cn/otn/leftTicket/queryZ?leftTicketDTO.train_date=${start_date}&leftTicketDTO.from_station=${start_station}&leftTicketDTO.to_station=${end_station}&purpose_codes=ADULT`
 
 let header = "车次 出发站 到达站 出发时间 到达时间 历时 商务座 特等座 一等座 二等座 高级 软卧 动卧 硬卧 软座 硬座 无座"
 header = header.split(' ')
 
-axios.get(url).then((data) => {
-    let r = data.data
-    let alltickets = r.data.result
-    // console.log(alltickets[0])
-    let rows = []
-    alltickets.forEach(data => {
 
-        data = data.split('|')
-        let singlerow = []
+async function main(url) {
+    // console.log("url==>", url)
+    let r = await axios.get(url)
+    r = r.data.data
+    let alltickets = r.result
 
-        singlerow = singlerow.concat(data.slice(3, 5))
-        singlerow = singlerow.concat(data.slice(7, 11))
-        singlerow = singlerow.concat(data.slice(23, 33).reverse())
-
-        console.log(singlerow)
-        rows.push(singlerow)
-    });
+    let rows = parse_tickets(alltickets)
 
     pt.create(header, rows);
     pt.print();
+}
 
-})
+function parse_tickets(alltickets) {
+    let rows = []
+    alltickets.forEach(data => {
+        data = data.split('|')
+        let singlerow = []
+        
+        // singlerow = singlerow.concat(data.slice(3, 5))
+        singlerow = singlerow.concat([data[3]] )
+        singlerow = singlerow.concat([getCityName(data[4])] )
+        singlerow = singlerow.concat([getCityName(data[5])] )
+        singlerow = singlerow.concat(data.slice(7, 11))
+        singlerow = singlerow.concat(data.slice(23, 33).reverse())
+        rows.push(singlerow)
+    });
+    return rows
+}
 
-// let data = "9fg%2BYhuP36INsa7HobL3oBltb4wxRo2d35QmA798iLYWEZjhxhKDVBq6z%2B2J9tXy1NXGnvdxJ1ut%0AD9EMZQCpOwGjHbyHD1iN6b7meefJFVZNdA9UBZrlze5orif8KB1Jk5azOFkFfsoXb9Q7k9Yb6zDJ%0ALZXBLjh4hpC7KaZyZ2UwjumKuG%2Fii706gwPkCXg9VNAVM51erV%2FWTJs3U3%2FwbHuhOQ4mmo9COxir%0A6b0RqwoKR8oBqSaFYMAN2DiJyaDxyaf1qQ%3D%3D|预订|5l000G197010|G1970|AOH|LAJ|AOH|ZAF|06:09|11:00|04:51|Y|BujjGtdrdApNPPTOp555qgrG4tNKiXYVcPGSzu3SaPLa4%2FfM|20180126|3|H2|01|11|1|0|||||||||||无|无|3||O0M090|OM9|0"
 
+main(url)
 
 
 
